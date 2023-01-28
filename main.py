@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import csv, time
 import Levenshtein
 import uvicorn
-
+import regex as re
 app = FastAPI()
 
 class Item(BaseModel):
@@ -54,9 +54,15 @@ def translate(sentence, mode):
         translations[row[2]] = [row[0], row[1]]
     
     words = sentence.split()
+    words = [i.lower() for i in words]
     trie = create_trie(rows)
     translated_sentence = []
+    kosong = []
     for word in words:
+        word = re.sub(r'([^\d\w\s])', '', word)
+        if(len(re.findall(r"(\d)", word)) > 0):
+            translated_sentence.append(word)
+            continue
         search_result = trie.search(word)
         if search_result:
             if mode == "cerbon":
@@ -72,10 +78,11 @@ def translate(sentence, mode):
                     closest_word = key
                     closest_distance = distance
             if mode == "cerbon":
-                translated_sentence.append(translations[closest_word][0])
+                translated_sentence.append("!"+translations[closest_word][0])
             elif mode == "bebasan":
-                translated_sentence.append(translations[closest_word][1])
-    return " ".join(translated_sentence)
+                translated_sentence.append("!"+translations[closest_word][1])
+            kosong.append(word)
+    return " ".join(translated_sentence), kosong
 
 @app.post("/translate/")
 def translate_sentence(item: Item):
