@@ -57,7 +57,6 @@ def translate(sentence, mode):
     words = [i.lower() for i in words]
     trie = create_trie(rows)
     translated_sentence = []
-    kosong = []
     for word in words:
         word = re.sub(r'([^\d\w\s])', '', word)
         if(len(re.findall(r"(\d)", word)) > 0):
@@ -81,8 +80,7 @@ def translate(sentence, mode):
                 translated_sentence.append("!"+translations[closest_word][0])
             elif mode == "bebasan":
                 translated_sentence.append("!"+translations[closest_word][1])
-            kosong.append(word)
-    return " ".join(translated_sentence), kosong
+    return " ".join(translated_sentence)
 
 @app.post("/translate/")
 def translate_sentence(item: Item):
